@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dairy Case">
+<title>Dairy Case Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --cold-white:#FAFAF6;
+  --panel:#FFFFFF;
+  --ink:#233022;
+  --dairy-blue:#2C6B3F;
+  --dairy-blue-dark:#1E4C2C;
+  --alert-red:#C1432E;
+  --warn-amber:#D98C1E;
+  --fresh-green:#3C8C55;
+  --line:#DEE6DA;
+  --muted:#6C7A68;
+  --wood-1:#8B5A2B;
+  --wood-2:#A9754A;
+  --wood-3:#6B4019;
+}
+
+.wood-strip{
+  height:14px;
+  border-radius:3px;
+  background:repeating-linear-gradient(90deg, var(--wood-1) 0px, var(--wood-2) 7px, var(--wood-1) 14px, var(--wood-3) 21px);
+  border:1px solid var(--wood-3);
+  box-shadow:inset 0 2px 3px rgba(0,0,0,0.28);
+  margin-bottom:16px;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--cold-white);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+
+.header{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  padding-bottom:12px;
+  margin-bottom:0;
+}
+.header h1{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:28px;
+  letter-spacing:0.5px;
+  margin:0;
+  color:var(--dairy-blue-dark);
+  text-transform:uppercase;
+}
+.header .sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.banner{
+  display:none;
+  align-items:center;
+  gap:10px;
+  background:#FBEAE6;
+  border:1.5px solid var(--alert-red);
+  color:var(--alert-red);
+  border-radius:6px;
+  padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:16px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+
+.tabs{display:flex;gap:6px;margin-bottom:20px;}
+.tab{
+  flex:1;
+  padding:10px 12px;
+  background:var(--panel);
+  border:2px solid var(--line);
+  border-radius:6px;
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--muted);
+  cursor:pointer;
+  text-align:center;
+  transition:all .15s;
+}
+.tab.active{
+  background:var(--dairy-blue);
+  border-color:var(--dairy-blue);
+  color:#fff;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:18px;
+  margin-bottom:16px;
+}
+.card{border-left:4px solid var(--wood-1);}
+.card h2{
+  font-family:'Oswald',sans-serif;
+  font-size:16px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin:0 0 14px 0;
+  color:var(--dairy-blue-dark);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.summary-bar{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+}
+.summary-box{
+  flex:1;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:12px 14px;
+  text-align:center;
+}
+.summary-box .num{
+  font-family:'Oswald',sans-serif;
+  font-size:26px;
+  font-weight:700;
+  color:var(--dairy-blue-dark);
+}
+.summary-box.risk .num{color:var(--alert-red);}
+.summary-box .lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--muted);
+}
+
+.form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.form-row > div{flex:1;min-width:120px;}
+label{
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+input{
+  width:100%;
+  padding:9px 10px;
+  border:1.5px solid var(--line);
+  border-radius:5px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  color:var(--ink);
+  background:#fff;
+}
+input:focus{outline:none;border-color:var(--dairy-blue);}
+
+button.primary{
+  background:var(--dairy-blue);
+  color:#fff;
+  border:none;
+  padding:10px 18px;
+  border-radius:5px;
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  margin-top:4px;
+}
+button.primary:hover{background:var(--dairy-blue-dark);}
+
+button.secondary{
+  background:#fff;
+  color:var(--dairy-blue);
+  border:1.5px solid var(--dairy-blue);
+  padding:10px 16px;
+  border-radius:5px;
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  margin-top:4px;
+  margin-left:8px;
+}
+
+.sort-toggle{display:flex;gap:4px;}
+.sort-btn{
+  background:#fff;
+  border:1.5px solid var(--line);
+  color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  padding:5px 9px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.sort-btn.active{border-color:var(--dairy-blue);color:var(--dairy-blue);background:#EAF2F6;}
+
+.item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:6px;
+  border:1px solid var(--line);
+  margin-bottom:8px;
+  background:#fff;
+  flex-wrap:wrap;
+}
+.stamp{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  font-size:12px;
+  padding:5px 8px;
+  border-radius:4px;
+  border:2px solid currentColor;
+  transform:rotate(-2deg);
+  white-space:nowrap;
+  letter-spacing:0.5px;
+}
+.stamp.expired{color:var(--alert-red);}
+.stamp.soon{color:var(--warn-amber);}
+.stamp.ok{color:var(--fresh-green);}
+
+.item .name{font-weight:600;flex:1;min-width:140px;}
+.item .sales-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--fresh-green);
+  background:#E9F5EF;
+  border-radius:3px;
+  padding:2px 6px;
+  white-space:nowrap;
+}
+.item .days{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.item .actions{display:flex;gap:4px;}
+.item button.icon-btn{
+  background:none;
+  border:1px solid var(--line);
+  color:var(--muted);
+  cursor:pointer;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:4px;
+  font-family:'JetBrains Mono',monospace;
+  text-transform:uppercase;
+}
+.item button.icon-btn:hover{color:var(--dairy-blue);border-color:var(--dairy-blue);}
+.item button.del:hover{color:var(--alert-red);border-color:var(--alert-red);}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  padding:24px 0;
+}
+
+.result{
+  background:var(--cold-white);
+  border:2px dashed var(--dairy-blue);
+  border-radius:6px;
+  padding:16px;
+  margin-top:12px;
+  text-align:center;
+}
+.result .qty{
+  font-family:'Oswald',sans-serif;
+  font-size:36px;
+  font-weight:700;
+  color:var(--dairy-blue-dark);
+}
+.result .label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--muted);
+}
+.result .detail{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
+.saved-list{margin-top:10px;}
+.saved-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:5px;
+  margin-bottom:6px;
+  font-size:13px;
+}
+.saved-item button{
+  background:var(--dairy-blue);
+  color:#fff;
+  border:none;
+  padding:5px 10px;
+  border-radius:4px;
+  font-size:11px;
+  cursor:pointer;
+  text-transform:uppercase;
+  font-family:'Oswald',sans-serif;
+}
+
+.hint{font-size:12px;color:var(--muted);margin-top:2px;}
+
+.history-toggle{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--dairy-blue);
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  text-align:center;
+  padding:8px 0 0;
+}
+.history-list{display:none;margin-top:10px;}
+.history-item{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--muted);
+  padding:6px 4px;
+  border-bottom:1px solid var(--line);
+}
+
+/* ---- BULK IMPORT ---- */
+.upload-box{
+  position:relative;
+  border:2px dashed var(--dairy-blue);
+  border-radius:8px;
+  background:var(--cold-white);
+  text-align:center;
+  padding:26px 14px;
+}
+.upload-box input[type=file]{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:0;
+  cursor:pointer;
+}
+.upload-label{
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--dairy-blue);
+}
+.bulk-msg{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  margin-top:10px;
+  padding:8px 10px;
+  border-radius:5px;
+}
+.bulk-msg.ok{background:#E9F5EF;color:var(--fresh-green);}
+.bulk-msg.err{background:#FBEAE6;color:var(--alert-red);}
+
+.map-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:7px 0;
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;
+}
+.map-row:last-child{border-bottom:none;}
+.map-row .field-name{
+  flex:1;
+  min-width:150px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--ink);
+  font-weight:600;
+}
+.map-row select{
+  flex:1;
+  min-width:150px;
+  padding:8px 9px;
+  border:1.5px solid var(--line);
+  border-radius:5px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  color:var(--ink);
+  background:#fff;
+}
+.map-row select:focus{outline:none;border-color:var(--dairy-blue);}
+
+.preview-scroll{overflow-x:auto;margin-bottom:14px;-webkit-overflow-scrolling:touch;}
+.preview-table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap;}
+.preview-table th,.preview-table td{
+  padding:7px 10px;
+  border:1px solid var(--line);
+  text-align:left;
+}
+.preview-table th{
+  background:var(--cold-white);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--muted);
+}
+.preview-table tr:nth-child(even) td{background:#FAFCFD;}
+.preview-table input{padding:5px 6px;font-size:12px;border:1px solid var(--line);border-radius:4px;width:100%;}
+
+.import-row{display:flex;gap:10px;margin-bottom:4px;}
+.upload-box.small{padding:16px 10px;flex:1;}
+.upload-box.small .upload-label{font-size:12px;}
+.saved-item{flex-wrap:wrap;gap:8px;}
+
+/* ---- LIVE SCAN ---- */
+.scan-video-box{position:relative;background:#12200f;border-radius:8px;overflow:hidden;aspect-ratio:4/3;}
+.scan-video-box video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
+.scan-banner{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:9px 12px;
+  background:linear-gradient(0deg, rgba(0,0,0,.68), transparent);
+  color:#fff;font-size:12.5px;font-family:'JetBrains Mono',monospace;
+  min-height:18px;
+}
+.order-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  font-size:11px;
+  color:var(--dairy-blue-dark);
+  background:#EAF2E8;
+  border-radius:4px;
+  padding:3px 7px;
+  white-space:nowrap;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>Dairy Case Tracker</h1>
+    <div class="sub" id="today"></div>
+  </div>
+  <div class="wood-strip"></div>
+
+  <div class="banner" id="alertBanner"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="expiry">Expiration Tracker</div>
+    <div class="tab" data-tab="order">Order Calculator</div>
+  </div>
+
+  <!-- EXPIRATION TRACKER -->
+  <div id="expiry-panel">
+
+    <div class="summary-bar">
+      <div class="summary-box">
+        <div class="num" id="sumTotal">0</div>
+        <div class="lbl">Logged</div>
+      </div>
+      <div class="summary-box risk">
+        <div class="num" id="sumRisk">0</div>
+        <div class="lbl">Due in 7 days</div>
+      </div>
+      <div class="summary-box risk">
+        <div class="num" id="sumUnits">0</div>
+        <div class="lbl">Units at risk</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Quick import</h2>
+      <div class="hint" style="margin-bottom:10px;">Upload a spreadsheet or a photo of shelf tags/labels — we'll pull out product names and expiration dates and sort them for you.</div>
+      <div class="import-row">
+        <label class="upload-box small">
+          <input type="file" id="expirySheetFile" accept=".csv,.xlsx,.xls" onchange="handleImportFile(event,'expiry','sheet')">
+          <div class="upload-label">📄 Spreadsheet</div>
+        </label>
+        <label class="upload-box small">
+          <input type="file" id="expiryPhotoFile" accept="image/*" capture="environment" onchange="handleImportFile(event,'expiry','photo')">
+          <div class="upload-label">📷 Photo</div>
+        </label>
+      </div>
+      <div id="expiryImportStatus"></div>
+      <div id="expiryImportPreviewCard" style="display:none;margin-top:12px;">
+        <div id="expiryImportPreview"></div>
+        <button class="primary" onclick="commitImport('expiry')">Add all to tracker</button>
+        <button class="secondary" onclick="cancelImportPreview('expiry')">Discard</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="logHeader">Log a product</h2>
+      <div class="form-row">
+        <div>
+          <label>Product</label>
+          <input type="text" id="prodName" list="productNames" placeholder="e.g. Chobani vanilla 4pk">
+          <datalist id="productNames"></datalist>
+        </div>
+        <div>
+          <label>Expiration date</label>
+          <input type="date" id="prodDate">
+        </div>
+        <div>
+          <label>Qty (optional)</label>
+          <input type="number" id="prodQty" placeholder="units" min="1">
+        </div>
+      </div>
+      <button class="primary" id="addBtn" onclick="addExpiryItem()">Add to tracker</button>
+      <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEdit()">Cancel</button>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span>Expiring products</span>
+        <span class="sort-toggle">
+          <span class="sort-btn active" data-sort="urgency" onclick="setSort('urgency')">Urgency</span>
+          <span class="sort-btn" data-sort="az" onclick="setSort('az')">A–Z</span>
+        </span>
+      </h2>
+      <div id="expiryList"></div>
+      <div class="history-toggle" onclick="toggleHistory()">▾ Recently pulled (<span id="historyCount">0</span>)</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- ORDER CALCULATOR -->
+  <div id="order-panel" style="display:none;">
+    <div class="card">
+      <h2>Quick import</h2>
+      <div class="hint" style="margin-bottom:10px;">Upload a spreadsheet or a photo of the shelf — we'll pull out product names and current stock counts and get them ready to calculate.</div>
+      <div class="import-row">
+        <label class="upload-box small">
+          <input type="file" id="orderSheetFile" accept=".csv,.xlsx,.xls" onchange="handleImportFile(event,'order','sheet')">
+          <div class="upload-label">📄 Spreadsheet</div>
+        </label>
+        <label class="upload-box small">
+          <input type="file" id="orderPhotoFile" accept="image/*" capture="environment" onchange="handleImportFile(event,'order','photo')">
+          <div class="upload-label">📷 Photo</div>
+        </label>
+        <div class="upload-box small" style="cursor:pointer;" onclick="openLiveScan()">
+          <div class="upload-label">🎥 Live scan</div>
+        </div>
+      </div>
+      <div id="orderImportStatus"></div>
+      <div id="orderImportPreviewCard" style="display:none;margin-top:12px;">
+        <div id="orderImportPreview"></div>
+        <button class="primary" onclick="commitImport('order')">Add all to saved products</button>
+        <button class="secondary" onclick="cancelImportPreview('order')">Discard</button>
+      </div>
+
+      <div id="liveScanPanel" style="display:none;margin-top:14px;">
+        <div class="hint" style="margin-bottom:10px;">Point the camera at the sales report and hold it steady. Frames are captured automatically as units sold are matched against your saved products.</div>
+        <div class="scan-video-box">
+          <video id="scanVideo" autoplay playsinline muted></video>
+          <div class="scan-banner" id="scanBanner">Start the camera to begin scanning.</div>
+        </div>
+        <canvas id="scanCaptureCanvas" style="display:none;"></canvas>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="primary" id="scanStartBtn" onclick="startLiveScan()">Start camera</button>
+          <button class="secondary" id="scanStopBtn" onclick="stopLiveScan()" disabled>Stop &amp; review</button>
+          <button class="secondary" onclick="closeLiveScan()">Cancel</button>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;" id="scanSessionStatus">0 items scanned</div>
+      </div>
+
+      <div id="liveScanReviewCard" style="display:none;margin-top:14px;">
+        <div class="hint" style="margin-bottom:8px;">Review before committing. <strong>Scanned units get added to each product's existing weekly sales</strong> — edit the product name if a match looks wrong, or remove a row entirely.</div>
+        <div id="liveScanReview"></div>
+        <button class="primary" onclick="commitLiveScanReview()">Add to sales data</button>
+        <button class="secondary" onclick="cancelLiveScanReview()">Discard</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Weekly order calculator</h2>
+      <div class="form-row">
+        <div>
+          <label>Product</label>
+          <input type="text" id="ordName" list="productNames" placeholder="e.g. Whole milk gallon">
+        </div>
+        <div>
+          <label>Avg weekly sales (units)</label>
+          <input type="number" id="ordWeekly" placeholder="e.g. 84">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Current inventory (units)</label>
+          <input type="number" id="ordCurrent" placeholder="e.g. 20">
+        </div>
+        <div>
+          <label>Delivery lead time (days)</label>
+          <input type="number" id="ordLead" placeholder="e.g. 2" value="2">
+        </div>
+        <div>
+          <label>Safety stock %</label>
+          <input type="number" id="ordSafety" placeholder="e.g. 15" value="15">
+        </div>
+      </div>
+      <div class="hint">Formula: (avg daily sales × (7 + lead time)) + safety stock − current inventory</div>
+      <button class="primary" onclick="calcOrder()">Calculate order qty</button>
+      <div id="orderResult"></div>
+    </div>
+
+    <div class="card">
+      <h2>Saved products <span style="font-weight:400;font-size:12px;color:var(--muted);">sorted by soonest to run out</span></h2>
+      <div class="saved-list" id="savedList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+<script>
+const todayStr = new Date().toISOString().split('T')[0];
+document.getElementById('today').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+// ---- TAB SWITCHING ----
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const which = t.dataset.tab;
+    document.getElementById('expiry-panel').style.display = which==='expiry' ? 'block':'none';
+    document.getElementById('order-panel').style.display = which==='order' ? 'block':'none';
+  });
+});
+
+// ---- STATE ----
+let expiryItems = [];
+let pulledHistory = [];
+let savedProducts = [];
+let sortMode = 'urgency';
+let editingId = null;
+
+// ---- STORAGE ----
+function loadAll(){
+  try{ expiryItems = JSON.parse(localStorage.getItem('dairy-expiry-items') || '[]'); }catch(e){ expiryItems = []; }
+  try{ pulledHistory = JSON.parse(localStorage.getItem('dairy-pulled-history') || '[]'); }catch(e){ pulledHistory = []; }
+  try{ savedProducts = JSON.parse(localStorage.getItem('dairy-order-products') || '[]'); }catch(e){ savedProducts = []; }
+  renderExpiry();
+  renderSaved();
+  renderHistory();
+  updateProductDatalist();
+  updateSummaryAndBanner();
+}
+function saveExpiry(){ try{ localStorage.setItem('dairy-expiry-items', JSON.stringify(expiryItems)); }catch(e){} }
+function saveHistory(){ try{ localStorage.setItem('dairy-pulled-history', JSON.stringify(pulledHistory)); }catch(e){} }
+function saveSavedProducts(){ try{ localStorage.setItem('dairy-order-products', JSON.stringify(savedProducts)); }catch(e){} }
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function daysUntil(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const t = new Date(todayStr+'T00:00:00');
+  return Math.round((d-t)/86400000);
+}
+
+function findSalesFor(name){
+  const match = savedProducts.find(p=>p.name.toLowerCase()===name.trim().toLowerCase());
+  return match ? match.weekly : null;
+}
+
+function updateProductDatalist(){
+  const dl = document.getElementById('productNames');
+  const names = new Set(savedProducts.map(p=>p.name));
+  expiryItems.forEach(i=>names.add(i.name));
+  dl.innerHTML = [...names].map(n=>`<option value="${escapeHtml(n)}">`).join('');
+}
+
+// ---- EXPIRATION TRACKER ----
+function addExpiryItem(){
+  const name = document.getElementById('prodName').value.trim();
+  const date = document.getElementById('prodDate').value;
+  const qty = document.getElementById('prodQty').value;
+  if(!name || !date){
+    alert('Enter a product name and expiration date.');
+    return;
+  }
+  if(editingId){
+    const item = expiryItems.find(i=>i.id===editingId);
+    if(item){ item.name = name; item.date = date; item.qty = qty || null; }
+    cancelEdit();
+  } else {
+    expiryItems.push({id:Date.now().toString(), name, date, qty: qty || null});
+  }
+  document.getElementById('prodName').value='';
+  document.getElementById('prodDate').value='';
+  document.getElementById('prodQty').value='';
+  saveExpiry();
+  renderExpiry();
+  updateProductDatalist();
+  updateSummaryAndBanner();
+}
+
+function editExpiryItem(id){
+  const item = expiryItems.find(i=>i.id===id);
+  if(!item) return;
+  editingId = id;
+  document.getElementById('prodName').value = item.name;
+  document.getElementById('prodDate').value = item.date;
+  document.getElementById('prodQty').value = item.qty || '';
+  document.getElementById('addBtn').textContent = 'Save changes';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  document.getElementById('logHeader').firstChild.textContent = 'Editing product';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function cancelEdit(){
+  editingId = null;
+  document.getElementById('prodName').value='';
+  document.getElementById('prodDate').value='';
+  document.getElementById('prodQty').value='';
+  document.getElementById('addBtn').textContent = 'Add to tracker';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('logHeader').firstChild.textContent = 'Log a product';
+}
+
+function pullExpiryItem(id){
+  const idx = expiryItems.findIndex(i=>i.id===id);
+  if(idx===-1) return;
+  const item = expiryItems[idx];
+  pulledHistory.unshift({...item, pulledAt: todayStr});
+  pulledHistory = pulledHistory.slice(0, 50);
+  expiryItems.splice(idx,1);
+  saveExpiry();
+  saveHistory();
+  renderExpiry();
+  renderHistory();
+  updateSummaryAndBanner();
+}
+
+function setSort(mode){
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active', b.dataset.sort===mode));
+  renderExpiry();
+}
+
+function renderExpiry(){
+  const list = document.getElementById('expiryList');
+  if(expiryItems.length===0){
+    list.innerHTML = '<div class="empty">No products logged yet. Add one above.</div>';
+    return;
+  }
+  let sorted = [...expiryItems];
+  if(sortMode==='urgency'){
+    sorted.sort((a,b)=> new Date(a.date) - new Date(b.date));
+  } else {
+    sorted.sort((a,b)=> a.name.localeCompare(b.name));
+  }
+  list.innerHTML = sorted.map(item=>{
+    const d = daysUntil(item.date);
+    let cls, label;
+    if(d < 0){ cls='expired'; label = Math.abs(d)+'D EXPIRED'; }
+    else if(d===0){ cls='expired'; label='EXPIRES TODAY'; }
+    else if(d<=7){ cls='soon'; label=d+'D LEFT'; }
+    else { cls='ok'; label=d+'D LEFT'; }
+    const dateNice = new Date(item.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const weekly = findSalesFor(item.name);
+    const salesTag = weekly!==null ? `<span class="sales-tag">sells ${weekly}/wk</span>` : '';
+    return `<div class="item">
+      <div class="stamp ${cls}">${label}</div>
+      <div class="name">${escapeHtml(item.name)}${item.qty ? ' · '+item.qty+' units' : ''}</div>
+      ${salesTag}
+      <div class="days">${dateNice}</div>
+      <div class="actions">
+        <button class="icon-btn" onclick="editExpiryItem('${item.id}')">Edit</button>
+        <button class="icon-btn del" onclick="pullExpiryItem('${item.id}')">Pulled</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistory(){
+  const el = document.getElementById('historyList');
+  el.style.display = el.style.display==='block' ? 'none' : 'block';
+}
+
+function renderHistory(){
+  document.getElementById('historyCount').textContent = pulledHistory.length;
+  const el = document.getElementById('historyList');
+  if(pulledHistory.length===0){
+    el.innerHTML = '<div class="empty">Nothing pulled yet.</div>';
+    return;
+  }
+  el.innerHTML = pulledHistory.map(h=>{
+    const dateNice = new Date(h.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const pulledNice = new Date(h.pulledAt+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="history-item"><span>${escapeHtml(h.name)}</span><span>exp ${dateNice} · pulled ${pulledNice}</span></div>`;
+  }).join('');
+}
+
+function updateSummaryAndBanner(){
+  const total = expiryItems.length;
+  const risky = expiryItems.filter(i=>daysUntil(i.date)<=7);
+  const riskCount = risky.length;
+  const unitsAtRisk = risky.reduce((sum,i)=> sum + (parseInt(i.qty)||1), 0);
+
+  document.getElementById('sumTotal').textContent = total;
+  document.getElementById('sumRisk').textContent = riskCount;
+  document.getElementById('sumUnits').textContent = unitsAtRisk;
+
+  const banner = document.getElementById('alertBanner');
+  if(riskCount > 0){
+    banner.style.display = 'flex';
+    banner.textContent = `⚠ ${riskCount} item${riskCount===1?'':'s'} expiring within 7 days`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  if('setAppBadge' in navigator){
+    try{
+      if(riskCount>0){ navigator.setAppBadge(riskCount).catch(()=>{}); }
+      else { navigator.clearAppBadge().catch(()=>{}); }
+    }catch(e){}
+  }
+}
+
+// ---- ORDER CALCULATOR ----
+function calcOrder(){
+  const name = document.getElementById('ordName').value.trim();
+  const weekly = parseFloat(document.getElementById('ordWeekly').value);
+  const current = parseFloat(document.getElementById('ordCurrent').value) || 0;
+  const lead = parseFloat(document.getElementById('ordLead').value) || 0;
+  const safetyPct = parseFloat(document.getElementById('ordSafety').value) || 0;
+
+  if(!name || isNaN(weekly)){
+    alert('Enter a product name and average weekly sales.');
+    return;
+  }
+
+  const dailyAvg = weekly / 7;
+  const coverageDays = 7 + lead;
+  const baseNeed = dailyAvg * coverageDays;
+  const safetyStock = baseNeed * (safetyPct/100);
+  let suggested = baseNeed + safetyStock - current;
+  suggested = Math.max(0, Math.round(suggested));
+
+  document.getElementById('orderResult').innerHTML = `
+    <div class="result">
+      <div class="qty">${suggested}</div>
+      <div class="label">units to order — ${escapeHtml(name)}</div>
+      <div class="detail">covers ${coverageDays} days · +${Math.round(safetyStock)} safety stock · minus ${current} on hand</div>
+    </div>`;
+
+  const existing = savedProducts.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(existing){
+    existing.weekly = weekly; existing.lead = lead; existing.safety = safetyPct; existing.current = current;
+  } else {
+    savedProducts.push({name, weekly, lead, safety: safetyPct, current});
+  }
+  saveSavedProducts();
+  renderSaved();
+  updateProductDatalist();
+  renderExpiry(); // refresh sales tags now that data changed
+}
+
+function daysOfSupply(p){
+  if(!p.weekly || p.weekly<=0) return Infinity;
+  return (p.current||0) / (p.weekly/7);
+}
+
+function suggestedOrderQty(p){
+  const weekly = p.weekly || 0;
+  const current = p.current || 0;
+  const lead = p.lead || 0;
+  const safetyPct = p.safety || 0;
+  const dailyAvg = weekly / 7;
+  const coverageDays = 7 + lead;
+  const baseNeed = dailyAvg * coverageDays;
+  const safetyStock = baseNeed * (safetyPct / 100);
+  return Math.max(0, Math.round(baseNeed + safetyStock - current));
+}
+
+function renderSaved(){
+  const el = document.getElementById('savedList');
+  if(savedProducts.length===0){
+    el.innerHTML = '<div class="empty">No saved products yet. Calculate one above or import a list.</div>';
+    return;
+  }
+  const sorted = [...savedProducts].sort((a,b)=> daysOfSupply(a)-daysOfSupply(b));
+  el.innerHTML = sorted.map(p=>{
+    const idx = savedProducts.indexOf(p);
+    const dos = daysOfSupply(p);
+    const dosLabel = dos===Infinity ? 'no sales data' : Math.round(dos)+'d supply';
+    const cls = dos<=3 ? 'expired' : dos<=7 ? 'soon' : 'ok';
+    const orderQty = suggestedOrderQty(p);
+    return `<div class="saved-item">
+      <span>${escapeHtml(p.name)} <span style="color:var(--muted)">(${p.weekly||0}/wk · ${p.current||0} on hand)</span></span>
+      <span class="stamp ${cls}" style="font-size:10px;padding:3px 6px;transform:none;">${dosLabel}</span>
+      <span class="order-badge">Order ${orderQty}</span>
+      <button onclick="reuseProduct(${idx})">Load</button>
+    </div>`;
+  }).join('');
+}
+
+function reuseProduct(idx){
+  const p = savedProducts[idx];
+  document.getElementById('ordName').value = p.name;
+  document.getElementById('ordWeekly').value = p.weekly;
+  document.getElementById('ordCurrent').value = p.current || '';
+  document.getElementById('ordLead').value = p.lead;
+  document.getElementById('ordSafety').value = p.safety;
+  document.querySelector('[data-tab="order"]').click();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ---- IMPORT (spreadsheet + photo, feeds directly into each tab) ----
+const FIELD_SETS = {
+  expiry: [
+    {key:'name',    label:'Product',  keywords:['product','item','name']},
+    {key:'expDate', label:'Exp. date',keywords:['expir','expdate','bestby','sellby','usebydate','date']},
+    {key:'qty',     label:'Qty',      keywords:['qty','quantity','units','unit']}
+  ],
+  order: [
+    {key:'name',    label:'Product',        keywords:['product','item','name']},
+    {key:'current', label:'Current stock',  keywords:['current','onhand','inventory','stock']},
+    {key:'weekly',  label:'Weekly sales',   keywords:['weekly','week','avgsales','avgweekly','sales']},
+    {key:'lead',    label:'Lead (days)',    keywords:['lead','leadtime']},
+    {key:'safety',  label:'Safety %',       keywords:['safety']}
+  ]
+};
+let importPreview = { expiry: [], order: [] };
+
+function normalizeHeader(h){
+  return String(h).toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+
+function guessMappingFor(fields, headers){
+  const mapping = {};
+  const used = new Set();
+  fields.forEach(f=>{
+    let found = '';
+    for(const h of headers){
+      const nh = normalizeHeader(h);
+      if(used.has(h)) continue;
+      if(f.keywords.some(k=>nh.includes(k))){ found = h; break; }
+    }
+    mapping[f.key] = found;
+    if(found) used.add(found);
+  });
+  return mapping;
+}
+
+function excelSerialToDateStr(n){
+  // Excel serial date (days since 1899-12-30)
+  const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+  return d.toISOString().split('T')[0];
+}
+
+function parseDateValue(v){
+  if(v === null || v === undefined || v === '') return null;
+  if(v instanceof Date && !isNaN(v)){
+    return v.toISOString().split('T')[0];
+  }
+  if(typeof v === 'number'){
+    try{ return excelSerialToDateStr(v); }catch(e){ return null; }
+  }
+  const s = String(v).trim();
+  // already yyyy-mm-dd
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // mm/dd/yyyy or m/d/yy
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m){
+    let [,mo,da,yr] = m;
+    if(yr.length===2) yr = '20'+yr;
+    const mm = mo.padStart(2,'0'), dd = da.padStart(2,'0');
+    const candidate = `${yr}-${mm}-${dd}`;
+    if(!isNaN(new Date(candidate+'T00:00:00'))) return candidate;
+  }
+  const parsed = new Date(s);
+  if(!isNaN(parsed)) return parsed.toISOString().split('T')[0];
+  return null;
+}
+
+async function handleImportFile(evt, context, kind){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById(context+'ImportStatus');
+  statusEl.innerHTML = '';
+  importPreview[context] = [];
+  document.getElementById(context+'ImportPreviewCard').style.display = 'none';
+
+  if(kind === 'sheet'){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type:'array', cellDates:true});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, {defval:'', raw:true});
+        if(!rows.length){
+          statusEl.innerHTML = '<div class="bulk-msg err">That file has no rows we could read.</div>';
+          return;
+        }
+        const headers = Object.keys(rows[0]);
+        const fields = FIELD_SETS[context];
+        const mapping = guessMappingFor(fields, headers);
+        const parsed = rows.map(row=>{
+          const out = {};
+          fields.forEach(f=>{
+            const col = mapping[f.key];
+            let val = col ? row[col] : '';
+            if(f.key==='expDate') val = parseDateValue(val) || '';
+            out[f.key] = val;
+          });
+          return out;
+        }).filter(r=>String(r.name||'').trim());
+        if(!parsed.length){
+          statusEl.innerHTML = '<div class="bulk-msg err">Couldn\'t find a product name column in that file. Check your headers and try again.</div>';
+          return;
+        }
+        importPreview[context] = parsed;
+        statusEl.innerHTML = `<div class="bulk-msg ok">Found ${parsed.length} product${parsed.length===1?'':'s'}. Review below, then add.</div>`;
+        renderImportPreview(context);
+      }catch(err){
+        statusEl.innerHTML = '<div class="bulk-msg err">Couldn\'t read that file. Make sure it\'s a valid .csv, .xlsx, or .xls.</div>';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+
+  } else if(kind === 'photo'){
+    statusEl.innerHTML = '<div class="bulk-msg ok">Reading photo… this can take a few seconds.</div>';
+    try{
+      const { data: { text } } = await Tesseract.recognize(file, 'eng');
+      const rows = context==='expiry' ? parseOcrTextForExpiry(text) : parseOcrTextForOrder(text);
+      if(!rows.length){
+        statusEl.innerHTML = '<div class="bulk-msg err">Couldn\'t pick out products from that photo. Try a closer, well-lit shot, or enter items manually.</div>';
+        return;
+      }
+      importPreview[context] = rows;
+      statusEl.innerHTML = `<div class="bulk-msg ok">Picked out ${rows.length} item${rows.length===1?'':'s'} from the photo. Photo scans aren't perfect — double-check before adding.</div>`;
+      renderImportPreview(context);
+    }catch(err){
+      statusEl.innerHTML = '<div class="bulk-msg err">Couldn\'t process that photo. Try again with better lighting.</div>';
+    }
+  }
+  evt.target.value = '';
+}
+
+function extractDateAndRest(line){
+  const patterns = [
+    /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/,
+    /([A-Za-z]{3,9}\.?\s+\d{1,2},?\s+\d{2,4})/,
+    /(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4})/
+  ];
+  for(const p of patterns){
+    const m = line.match(p);
+    if(m){
+      const parsed = parseDateValue(m[1]);
+      if(parsed){
+        const rest = line.replace(m[1],'').trim().replace(/[-:,]+$/,'').trim();
+        return {date:parsed, rest};
+      }
+    }
+  }
+  return null;
+}
+
+function parseOcrTextForExpiry(text){
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const rows = [];
+  let pendingName = '';
+  lines.forEach(line=>{
+    const found = extractDateAndRest(line);
+    if(found){
+      const qtyMatch = found.rest.match(/(\d+)\s*(units|ct|pk|pack)?$/i);
+      let name = found.rest, qty = '';
+      if(qtyMatch){ qty = qtyMatch[1]; name = found.rest.replace(qtyMatch[0],'').trim(); }
+      if(!name) name = pendingName || '(edit product name)';
+      rows.push({name, expDate: found.date, qty});
+      pendingName = '';
+    } else if(line.length > 2 && !/^\d+$/.test(line)){
+      pendingName = line;
+    }
+  });
+  return rows;
+}
+
+function parseOcrTextForOrder(text){
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const rows = [];
+  lines.forEach(line=>{
+    const m = line.match(/^(.*?)[\s:\-]+(\d{1,4})\s*(units|ct|pk|pcs)?$/i);
+    if(m){
+      const name = m[1].trim();
+      const current = m[2];
+      if(name && name.length > 1){
+        rows.push({name, current, weekly:'', lead:'', safety:''});
+      }
+    }
+  });
+  return rows;
+}
+
+function renderImportPreview(context){
+  const card = document.getElementById(context+'ImportPreviewCard');
+  const el = document.getElementById(context+'ImportPreview');
+  const rows = importPreview[context];
+  if(!rows.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  const fields = FIELD_SETS[context];
+  const head = '<tr>' + fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('') + '<th></th></tr>';
+  const body = rows.map((r,idx)=>{
+    const cells = fields.map(f=>{
+      const type = f.key==='expDate' ? 'date' : (f.key==='name' ? 'text' : 'number');
+      const val = r[f.key] ?? '';
+      return `<td><input type="${type}" value="${escapeHtml(String(val))}" oninput="updateImportCell('${context}',${idx},'${f.key}',this.value)"></td>`;
+    }).join('');
+    return `<tr>${cells}<td><button class="icon-btn del" onclick="removeImportRow('${context}',${idx})">✕</button></td></tr>`;
+  }).join('');
+  el.innerHTML = `<div class="preview-scroll"><table class="preview-table">${head}${body}</table></div>`;
+}
+
+function updateImportCell(context, idx, key, value){
+  importPreview[context][idx][key] = value;
+}
+
+function removeImportRow(context, idx){
+  importPreview[context].splice(idx,1);
+  renderImportPreview(context);
+}
+
+function cancelImportPreview(context){
+  importPreview[context] = [];
+  document.getElementById(context+'ImportPreviewCard').style.display = 'none';
+  document.getElementById(context+'ImportStatus').innerHTML = '';
+}
+
+function commitImport(context){
+  const rows = importPreview[context];
+  if(!rows || !rows.length) return;
+  let added = 0, skipped = 0;
+
+  if(context === 'expiry'){
+    rows.forEach(r=>{
+      const name = String(r.name||'').trim();
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(r.expDate||'') ? r.expDate : parseDateValue(r.expDate);
+      if(!name || !date || name==='(edit product name)'){ skipped++; return; }
+      expiryItems.push({
+        id: Date.now().toString() + Math.random().toString(36).slice(2,7),
+        name, date, qty: r.qty || null
+      });
+      added++;
+    });
+    saveExpiry();
+    renderExpiry();
+  } else {
+    rows.forEach(r=>{
+      const name = String(r.name||'').trim();
+      const current = parseFloat(r.current);
+      if(!name || isNaN(current)){ skipped++; return; }
+      const weekly = parseFloat(r.weekly);
+      const lead = parseFloat(r.lead);
+      const safety = parseFloat(r.safety);
+      const existing = savedProducts.find(p=>p.name.toLowerCase()===name.toLowerCase());
+      const rec = {
+        name,
+        current,
+        weekly: !isNaN(weekly) ? weekly : (existing ? existing.weekly : 0),
+        lead: !isNaN(lead) ? lead : (existing ? existing.lead : 2),
+        safety: !isNaN(safety) ? safety : (existing ? existing.safety : 15)
+      };
+      if(existing){ Object.assign(existing, rec); } else { savedProducts.push(rec); }
+      added++;
+    });
+    saveSavedProducts();
+    renderSaved();
+  }
+
+  updateProductDatalist();
+  updateSummaryAndBanner();
+  importPreview[context] = [];
+  document.getElementById(context+'ImportPreviewCard').style.display = 'none';
+  document.getElementById(context+'ImportStatus').innerHTML =
+    `<div class="bulk-msg ok">Added ${added} product${added===1?'':'s'}${skipped ? `, skipped ${skipped} (missing name or a required value)` : ''}.</div>`;
+}
+
+// ---- LIVE SCAN (Order Calculator — feeds weekly sales directly) ----
+let scanStream = null;
+let scanning = false;
+let scanLastFrame = null;
+let scanStillFrames = 0;
+let scanOcrBusy = false;
+const SCAN_STILL_THRESHOLD = 2;
+const SCAN_MOTION_SENSITIVITY = 30;
+const SCAN_SAMPLE_INTERVAL = 220;
+let scanSeen = new Map(); // productName -> {qty, isNew}
+let liveScanPreview = [];
+
+function openLiveScan(){
+  document.getElementById('liveScanPanel').style.display = 'block';
+  document.getElementById('liveScanReviewCard').style.display = 'none';
+  scanSeen = new Map();
+  document.getElementById('scanSessionStatus').textContent = '0 items scanned';
+  document.getElementById('scanBanner').textContent = 'Start the camera to begin scanning.';
+  document.getElementById('liveScanPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function closeLiveScan(){
+  stopScanStream();
+  document.getElementById('liveScanPanel').style.display = 'none';
+}
+
+async function startLiveScan(){
+  const video = document.getElementById('scanVideo');
+  try{
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } }
+    });
+  } catch(err){
+    try{ scanStream = await navigator.mediaDevices.getUserMedia({ video: true }); }
+    catch(err2){
+      document.getElementById('scanBanner').textContent = 'Camera unavailable: ' + err2.message;
+      return;
+    }
+  }
+  video.srcObject = scanStream;
+  await video.play();
+  scanning = true;
+  scanLastFrame = null;
+  scanStillFrames = 0;
+  document.getElementById('scanStartBtn').disabled = true;
+  document.getElementById('scanStopBtn').disabled = false;
+  document.getElementById('scanBanner').textContent = 'Watching for a steady frame...';
+  scanMonitorLoop();
+}
+
+function stopScanStream(){
+  scanning = false;
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream = null; }
+  document.getElementById('scanStartBtn').disabled = false;
+  document.getElementById('scanStopBtn').disabled = true;
+}
+
+function stopLiveScan(){
+  stopScanStream();
+  buildLiveScanReview();
+}
+
+function getScanSampleFrame(){
+  const video = document.getElementById('scanVideo');
+  const w = 80, h = 60;
+  const c = document.getElementById('scanCaptureCanvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(video, 0, 0, w, h);
+  return ctx.getImageData(0, 0, w, h).data;
+}
+
+function scanFrameDiff(a, b){
+  let diff = 0;
+  for(let i = 0; i < a.length; i += 4){ diff += Math.abs(a[i] - b[i]); }
+  return diff / (a.length / 4);
+}
+
+async function scanMonitorLoop(){
+  if(!scanning) return;
+  const sample = getScanSampleFrame();
+  if(scanLastFrame){
+    const d = scanFrameDiff(sample, scanLastFrame);
+    if(d < SCAN_MOTION_SENSITIVITY){ scanStillFrames++; }
+    else {
+      scanStillFrames = 0;
+      document.getElementById('scanBanner').textContent = 'Motion detected — pause to capture...';
+    }
+  }
+  scanLastFrame = sample;
+  if(scanStillFrames >= SCAN_STILL_THRESHOLD && !scanOcrBusy){
+    scanStillFrames = 0;
+    runScanOCR();
+  }
+  setTimeout(scanMonitorLoop, SCAN_SAMPLE_INTERVAL);
+}
+
+async function runScanOCR(){
+  scanOcrBusy = true;
+  document.getElementById('scanBanner').textContent = 'Frame steady — reading...';
+  const video = document.getElementById('scanVideo');
+  const full = document.createElement('canvas');
+  full.width = video.videoWidth; full.height = video.videoHeight;
+  full.getContext('2d').drawImage(video, 0, 0);
+  try{
+    const { data } = await Tesseract.recognize(full, 'eng');
+    handleScanOCRResult(data.text);
+  } catch(e){
+    document.getElementById('scanBanner').textContent = 'OCR error: ' + e.message;
+  }
+  scanOcrBusy = false;
+}
+
+// Fuzzy-match a scanned line against your actual saved products (not a fixed sample list)
+function matchScanProduct(line){
+  const lower = line.toLowerCase();
+  let best = null, bestScore = 0;
+  for(const p of savedProducts){
+    const words = p.name.toLowerCase().split(/\s+/);
+    let score = 0;
+    for(const w of words){ if(w.length > 1 && lower.includes(w)) score++; }
+    if(score > bestScore){ bestScore = score; best = p.name; }
+  }
+  return bestScore >= 2 ? best : null;
+}
+
+function handleScanOCRResult(text){
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let added = 0;
+
+  for(const line of lines){
+    const numMatch = line.match(/(\d{1,4})\s*$/);
+    if(!numMatch) continue;
+    const qty = parseInt(numMatch[1], 10);
+    if(isNaN(qty) || qty <= 0 || qty > 9999) continue;
+
+    let product = matchScanProduct(line);
+    let isNew = false;
+    if(!product){
+      product = line.replace(numMatch[0], '').trim().replace(/[\s:\-]+$/, '');
+      if(!product || product.length < 2) continue;
+      isNew = true;
+    }
+
+    if(scanSeen.has(product)) continue; // same row re-read on a repeat frame — skip
+    scanSeen.set(product, { qty, isNew });
+    added++;
+  }
+
+  document.getElementById('scanSessionStatus').textContent =
+    scanSeen.size + ' item' + (scanSeen.size === 1 ? '' : 's') + ' scanned';
+
+  if(added > 0){
+    document.getElementById('scanBanner').textContent = 'Watching for the next steady frame...';
+  } else {
+    document.getElementById('scanBanner').textContent = scanSeen.size
+      ? 'Already scanned that item — move to the next row.'
+      : 'No matching product line found in that frame.';
+  }
+}
+
+function buildLiveScanReview(){
+  liveScanPreview = [...scanSeen.entries()].map(([name, info]) => {
+    const existing = savedProducts.find(p => p.name === name);
+    return {
+      name,
+      scanned: info.qty,
+      currentWeekly: existing ? (existing.weekly || 0) : 0,
+      isNew: info.isNew || !existing
+    };
+  });
+  document.getElementById('liveScanPanel').style.display = 'none';
+  renderLiveScanReview();
+}
+
+function renderLiveScanReview(){
+  const card = document.getElementById('liveScanReviewCard');
+  const el = document.getElementById('liveScanReview');
+  if(!liveScanPreview.length){
+    card.style.display = 'none';
+    document.getElementById('orderImportStatus').innerHTML =
+      '<div class="bulk-msg err">Nothing matched during that scan. Try again with better lighting, or check product names.</div>';
+    return;
+  }
+  card.style.display = 'block';
+  el.innerHTML = `<div class="preview-scroll"><table class="preview-table">
+    <tr><th>Product</th><th>Scanned units</th><th>Current wkly</th><th>New wkly total</th><th></th></tr>
+    ${liveScanPreview.map((r, idx) => `
+      <tr>
+        <td><input type="text" list="productNames" value="${escapeHtml(r.name)}" oninput="updateScanCell(${idx},'name',this.value)"></td>
+        <td><input type="number" value="${r.scanned}" oninput="updateScanCell(${idx},'scanned',this.value)"></td>
+        <td>${r.currentWeekly}${r.isNew ? ' <span style="color:var(--muted)">(new)</span>' : ''}</td>
+        <td><strong>${(r.currentWeekly + (parseFloat(r.scanned) || 0)).toFixed(0)}</strong></td>
+        <td><button class="icon-btn del" onclick="removeScanRow(${idx})">✕</button></td>
+      </tr>`).join('')}
+  </table></div>`;
+}
+
+function updateScanCell(idx, key, value){
+  liveScanPreview[idx][key] = value;
+  if(key === 'name'){
+    const existing = savedProducts.find(p => p.name.toLowerCase() === String(value).trim().toLowerCase());
+    liveScanPreview[idx].currentWeekly = existing ? (existing.weekly || 0) : 0;
+    liveScanPreview[idx].isNew = !existing;
+  }
+  renderLiveScanReview();
+}
+
+function removeScanRow(idx){
+  liveScanPreview.splice(idx, 1);
+  renderLiveScanReview();
+}
+
+function cancelLiveScanReview(){
+  liveScanPreview = [];
+  document.getElementById('liveScanReviewCard').style.display = 'none';
+}
+
+function commitLiveScanReview(){
+  let added = 0, updated = 0;
+  liveScanPreview.forEach(r => {
+    const name = String(r.name || '').trim();
+    const scanned = parseFloat(r.scanned);
+    if(!name || isNaN(scanned)) return;
+    const existing = savedProducts.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if(existing){
+      existing.weekly = (existing.weekly || 0) + scanned;
+      updated++;
+    } else {
+      savedProducts.push({ name, weekly: scanned, current: 0, lead: 2, safety: 15 });
+      added++;
+    }
+  });
+  saveSavedProducts();
+  renderSaved();
+  updateProductDatalist();
+  renderExpiry();
+  liveScanPreview = [];
+  document.getElementById('liveScanReviewCard').style.display = 'none';
+  document.getElementById('orderImportStatus').innerHTML =
+    `<div class="bulk-msg ok">Added scanned sales to ${updated} product${updated === 1 ? '' : 's'}${added ? `, created ${added} new` : ''}. Suggested order quantities below are updated.</div>`;
+}
+
+// init
+loadAll();
+</script>
+</body>
+</html>
